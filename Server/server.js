@@ -8,7 +8,7 @@ const connectDB = require('./src/config/db.js');
 const authRouter = require("./src/Routes/authRouter.js");
 const productRouter = require("./src/Routes/productRouter.js");
 const cartRouter = require("./src/Routes/cartRouter.js");
-const orderRouter = require("./src/Routes/oderRouter.js");
+const orderRouter = require("./src/Routes/orderRouter.js");
 const paymentRoutes = require("./src/Routes/paymentRoutes.js");
 
 const app = express();
