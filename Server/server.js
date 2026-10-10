@@ -13,29 +13,29 @@ const paymentRoutes = require("./src/Routes/paymentRoutes.js");
 
 const app = express();
 
-const allowedOrigins = (process.env.CLIENT_URL || "")
-  .split(",")
-  .map((origin) => origin.trim());
+// ✅ Allowed origins मध्ये तुमची लाईव्ह फ्रंटएंड URL आणि लोकल होस्ट थेट जोडा
+const allowedOrigins = [
+  "https://shopverse-frontend-rilh.onrender.com",
+  "http://localhost:5173",
+  "http://localhost:3000",
+  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",").map((o) => o.trim()) : [])
+];
 
 app.use(cors({
   origin: (origin, callback) => {
-    const isLocalDevelopmentOrigin =
-      origin && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-
-    if (!origin || isLocalDevelopmentOrigin || allowedOrigins.includes(origin)) {
+    // Postman किंवा server-to-server requests साठी origin undefined असू शकते
+    if (!origin || allowedOrigins.includes(origin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
       callback(null, true);
-      return;
+    } else {
+      callback(new Error("Not allowed by CORS"));
     }
-
-    callback(new Error("Origin is not allowed by CORS"));
   },
-  credentials: true
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
-
-
-
 
 // API Routes Setup
 app.use('/api/auth', authRouter);
@@ -45,19 +45,20 @@ app.use('/api/order', orderRouter);
 app.use('/api/payment', paymentRoutes);
 
 app.get('/', (req, res) => {
-  res.send('API is running...');
+  res.send('API is running successfully...');
 });
+
 const startServer = async () => {
-  const db = await connectDB();
-
-
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    return db
-  });
-
-}
+  try {
+    await connectDB();
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error("Failed to connect to database:", err);
+    process.exit(1);
+  }
+};
 
 startServer();
-
