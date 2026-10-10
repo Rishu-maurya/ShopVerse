@@ -38,11 +38,12 @@ app.use(cors({
 app.use(express.json());
 
 // API Routes Setup
-app.use('/api/auth', authRouter);
-app.use('/api/product', productRouter);
-app.use('/api/addCart', cartRouter);
-app.use('/api/order', orderRouter);
-app.use('/api/payment', paymentRoutes);
+// ✅ /api kaadhun taka, jevheun front-end chya paths sobat barobar match hoil
+app.use('/auth', authRouter);
+app.use('/product', productRouter);
+app.use('/addCart', cartRouter);
+app.use('/order', orderRouter);
+app.use('/payment', paymentRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running successfully...');
