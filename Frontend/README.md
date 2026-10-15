@@ -7,7 +7,9 @@ Vite proxies `/api` requests to `http://localhost:5000` during development.
 For a separately hosted API, set `VITE_API_URL` to its API base URL (including
 `/api`) and set `CLIENT_URL` on the server to the frontend origin.
 
-Frontend API requests use the shared Axios client in `src/services/api.js`.
+Frontend API requests use the shared Axios client in
+`src/services/axiosInstance.js`. Set `VITE_API_URL` to override its default API
+base URL. The client adds the stored bearer token to requests automatically.
 Keep endpoint calls in the corresponding service module (`authService.js`,
 `productService.js`, `cartService.js`, or `orderService.js`) and call those
 functions from pages and components.
