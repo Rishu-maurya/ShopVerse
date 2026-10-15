@@ -1,172 +1,191 @@
-// src/pages/Home.jsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
+import { ArrowDownRight, ArrowUpRight, Package, Sparkles } from "lucide-react";
 import { toast } from "react-toastify";
+import ProductCard from "../components/productCard";
 import { setCart } from "../redux/slices/cartSlice";
 import { addToCart } from "../services/cartService";
 import { getAllProducts } from "../services/productService";
+import { getProductCategories } from "../utils/productUtils";
 import "../styles/products.css";
-
-const featureHighlights = [
-  { icon: "⚡", label: "Fast delivery" },
-  { icon: "🛡️", label: "Secure checkout" },
-  { icon: "↩️", label: "Easy returns" },
-  { icon: "🎁", label: "Exclusive deals" },
-];
-
-const categoryTags = [
-  "Fashion", "Electronics", "Home", "Beauty", "Accessories", "Wellness",
-];
 
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [heroImageFailed, setHeroImageFailed] = useState(false);
   const dispatch = useDispatch();
 
   useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await getAllProducts();
+        setProducts(data.products || data || []);
+      } catch (error) {
+        toast.error(error.response?.data?.message || error.message || "Failed to load products");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchProducts();
   }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const data = await getAllProducts();
-      setProducts(data.products || data || []);
-    } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Failed to load products");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAddToCart = async (productId) => {
     try {
       const data = await addToCart(productId);
       dispatch(setCart(data.cart));
-      toast.success("Added to cart!");
-    } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Please login to add items");
+      toast.success("Added to cart");
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message || "Please login to add items");
     }
   };
 
+  const categories = getProductCategories(products);
+  const featuredProduct = products.find((product) =>
+    product.images?.some((image) => typeof image === "string" && image.trim())
+  );
+  const featuredImage = featuredProduct?.images?.find(
+    (image) => typeof image === "string" && image.trim()
+  );
+  const visibleProducts = products.slice(0, 4);
+
   return (
-    <div className="products-wrapper">
-      <div className="hero-banner">
-        <div className="hero-copy">
-          <span className="hero-badge">🔥 Best Deals</span>
-          <h1>Shop more, save smarter.</h1>
+    <main className="products-wrapper home-page">
+      <section className="home-hero">
+        <div className="home-hero-content">
+          <span className="home-eyebrow"><Sparkles aria-hidden="true" /> The everyday edit</span>
+          <h1>Find your next <span>favourite thing.</span></h1>
           <p>
-            Discover trending styles and smart essentials at unbeatable prices.
-            Free delivery on orders above ₹499 and fresh offers every day.
+            The little upgrades, useful essentials, and unexpected finds that
+            make your day a bit better.
           </p>
-
-          <div className="hero-actions">
-            <Link to="/products" className="primary-btn">Shop now</Link>
-            <Link to="/products" className="secondary-btn">View offers</Link>
+          <div className="home-hero-actions">
+            <Link to="/products" className="home-primary-btn">
+              Explore the collection <ArrowUpRight aria-hidden="true" />
+            </Link>
+            {categories[0] && (
+              <Link
+                to={`/products?category=${encodeURIComponent(categories[0])}`}
+                className="home-text-link"
+              >
+                Browse {categories[0]} <ArrowDownRight aria-hidden="true" />
+              </Link>
+            )}
           </div>
-
-          <div className="hero-metrics">
-            <div>
-              <strong>24k+</strong>
-              <span>Happy shoppers</span>
+          {!loading && (
+            <div className="home-collection-note">
+              <span>{products.length}</span> finds across <span>{categories.length}</span> categories
             </div>
-            <div>
-              <strong>4.8/5</strong>
-              <span>Average rating</span>
-            </div>
-            <div>
-              <strong>2-day</strong>
-              <span>Fast delivery</span>
-            </div>
-          </div>
+          )}
         </div>
 
-        <div className="hero-visual" aria-label="Promotional product card">
-          <div className="floating-card main-card">
-            <span className="card-label">Flash Sale</span>
-            <strong>Up to 70% OFF</strong>
+        <div className="home-hero-art" aria-label="Discover products from ShopVerse">
+          <div className="home-art-orbit home-art-orbit-one" />
+          <div className="home-art-orbit home-art-orbit-two" />
+          <div className="home-art-label">
+            <span className="home-art-label-dot" />
+            A little something for you
           </div>
-
-          <div className="showcase-box">
-            <div className="showcase-badge">New season</div>
-            <div className="showcase-visual">
-              <div className="showcase-glow" />
+          {featuredProduct && featuredImage && !heroImageFailed ? (
+            <img
+              className="home-hero-image"
+              src={featuredImage}
+              alt="A product from the ShopVerse collection"
+              onError={() => setHeroImageFailed(true)}
+            />
+          ) : (
+            <div className="home-hero-placeholder">
+              <Package aria-hidden="true" />
             </div>
-          </div>
-
-          <div className="floating-card secondary-card">
-            <span className="card-label">Free shipping</span>
-            <strong>Orders ₹499+</strong>
-          </div>
-        </div>
-      </div>
-
-      <div className="promo-strip">
-        {featureHighlights.map((item) => (
-          <div key={item.label} className="promo-item">
-            <span>{item.icon}</span>
-            <p>{item.label}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="category-row">
-        {categoryTags.map((tag) => (
-          <Link key={tag} to="/products" className="category-pill">
-            {tag}
-          </Link>
-        ))}
-      </div>
-
-      <div className="section-header">
-        <h2>Featured Products</h2>
-        <Link to="/products" className="view-all-btn">View All</Link>
-      </div>
-
-      {loading ? (
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p style={{ color: "#878787", fontSize: "14px" }}>Loading Products...</p>
-        </div>
-      ) : products.length === 0 ? (
-        <div className="empty-state">
-          <h3>No products found!</h3>
-          <p>Check back later for amazing deals.</p>
-        </div>
-      ) : (
-        <div className="product-grid">
-          {products.map((item) => (
-            <div key={item._id} className="product-card">
-              <div className="card-image-box">
-                <span className="card-tag">Trending</span>
-                <img src={item.images?.[0] || "https://via.placeholder.com/200"} alt={item.name} />
+          )}
+          {products.length > 0 && (
+            <div className="home-featured-product">
+              <div>
+                <span>Take a look around</span>
+                <strong>The ShopVerse collection</strong>
               </div>
-
-              <div className="card-content">
-                <span className="card-category">{item.category || "General"}</span>
-                <h3 className="card-title">{item.name}</h3>
-
-                <div className="card-rating">
-                  <span className="rating-badge">4.2 ★</span>
-                  <span className="rating-count">(1,234)</span>
-                </div>
-
-                <div className="card-bottom">
-                  <div className="price-wrap">
-                    <span className="card-price">₹{item.price}</span>
-                    <span className="card-mrp">₹{Math.round(item.price * 1.3)}</span>
-                  </div>
-                  <span className="card-discount">23% off</span>
-                  <button className="btn-add-cart" onClick={() => handleAddToCart(item._id)}>
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
+              <span className="home-featured-price">{products.length} finds</span>
             </div>
-          ))}
+          )}
+          <span className="home-art-index" aria-hidden="true">01 / 01</span>
         </div>
+      </section>
+
+      {categories.length > 0 && (
+        <section className="home-category-section" aria-labelledby="categories-title">
+          <div className="home-section-heading">
+            <div>
+              <span className="home-section-eyebrow">A good place to start</span>
+              <h2 id="categories-title">Browse by category</h2>
+            </div>
+            <Link to="/products" className="home-section-link">
+              See everything <ArrowUpRight aria-hidden="true" />
+            </Link>
+          </div>
+          <div className="home-category-grid">
+            {categories.map((category) => (
+              <Link
+                key={category}
+                to={`/products?category=${encodeURIComponent(category)}`}
+                className="home-category-card"
+              >
+                <span className="home-category-icon"><Package aria-hidden="true" /></span>
+                <span className="home-category-copy">
+                  <strong>{category}</strong>
+                  <span>
+                    {products.filter((product) => product.category?.trim().toLowerCase() === category.toLowerCase()).length} items
+                  </span>
+                </span>
+                <ArrowUpRight className="home-category-arrow" aria-hidden="true" />
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
-    </div>
+
+      <section className="home-products-section" aria-labelledby="featured-title">
+        <div className="home-section-heading">
+          <div>
+            <span className="home-section-eyebrow">Worth a closer look</span>
+            <h2 id="featured-title">A few good finds</h2>
+          </div>
+          <Link to="/products" className="home-section-link">
+            Explore all products <ArrowUpRight aria-hidden="true" />
+          </Link>
+        </div>
+
+        {loading ? (
+          <div className="loading-state" role="status">
+            <div className="loading-spinner" />
+            <p>Finding good things...</p>
+          </div>
+        ) : products.length === 0 ? (
+          <div className="empty-state">
+            <h3>Nothing to show just yet</h3>
+            <p>New products will appear here when they are available.</p>
+          </div>
+        ) : (
+          <div className="product-grid home-product-grid">
+            {visibleProducts.map((product) => (
+              <ProductCard
+                key={product._id}
+                product={product}
+                onAddToCart={handleAddToCart}
+              />
+            ))}
+          </div>
+        )}
+
+        {!loading && products.length > visibleProducts.length && (
+          <div className="home-more-products">
+            <Link to="/products" className="home-more-link">
+              There&apos;s more to discover <ArrowUpRight aria-hidden="true" />
+            </Link>
+          </div>
+        )}
+      </section>
+    </main>
   );
 };
 

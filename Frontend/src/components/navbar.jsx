@@ -1,16 +1,27 @@
-// src/components/Navbar.jsx
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useEffect, useState } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Search, ShoppingBag } from "lucide-react";
 import { logout } from "../redux/slices/authSlice";
 import "../styles/navbar.css";
 
 const Navbar = () => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { totalQuantity } = useSelector((state) => state.cart);
-
+  const [search, setSearch] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    setSearch(new URLSearchParams(location.search).get("search") || "");
+  }, [location.search]);
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+    const query = search.trim();
+    navigate(query ? `/products?search=${encodeURIComponent(query)}` : "/products");
+  };
 
   const handleLogout = () => {
     dispatch(logout());
@@ -18,116 +29,63 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar">
-      <div className="navbar-inner">
-        {/* Logo */}
-        <Link to="/" className="nav-logo">
-          ShopVerse
-          <span>Explore Plus</span>
+    <header className="navbar">
+      <nav className="navbar-inner" aria-label="Main navigation">
+        <Link to="/" className="nav-logo" aria-label="ShopVerse home">
+          <span className="nav-logo-mark"><ShoppingBag aria-hidden="true" /></span>
+          <span>ShopVerse</span>
         </Link>
 
-        {/* Search Bar */}
-        <div className="nav-search">
+        <form className="nav-search" onSubmit={handleSearch} role="search">
+          <Search className="nav-search-icon" aria-hidden="true" />
           <input
-            type="text"
-            placeholder="Search for products, brands and more"
-            readOnly
+            type="search"
+            aria-label="Search products"
+            placeholder="Search the collection"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
           />
-          <button className="nav-search-btn">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-            Search
+          <button className="nav-search-btn" type="submit" aria-label="Submit search">
+            <Search aria-hidden="true" />
           </button>
-        </div>
+        </form>
 
-        {/* Nav Links */}
         <ul className="nav-links">
-          <li>
-            <Link to="/" className="nav-link">
-              Home
-            </Link>
-          </li>
-          <li>
-            <Link to="/products" className="nav-link">
-              Products
-            </Link>
-          </li>
+          <li><NavLink to="/" end className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>Home</NavLink></li>
+          <li><NavLink to="/products" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>Products</NavLink></li>
+
+          {isAuthenticated && (user?.role === "dealer" || user?.role === "admin") && (
+            <>
+              <li><NavLink to="/add-product" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>Add product</NavLink></li>
+              <li><NavLink to="/my-products" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>My products</NavLink></li>
+            </>
+          )}
 
           {isAuthenticated && (
             <>
-            {(user?.role === "dealer" || user?.role === "admin") && (
+              <li><NavLink to="/orders" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>Orders</NavLink></li>
               <li>
-                <Link to="/add-product" className="nav-link">
-                  Add Product
-                </Link>
-              </li>
-            )}
-
-            {(user?.role === "dealer" || user?.role === "admin") && (
-              <li>
-                <Link to="/my-product" className="nav-link">
-                  My Products
-                </Link>
-              </li>
-            )}
-
-
-              <li>
-                <Link to="/orders" className="nav-link">
-                  My Orders
-                </Link>
-              </li>
-              <li>
-                <Link to="/cart" className="cart-badge-container">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                    <line x1="3" y1="6" x2="21" y2="6" />
-                    <path d="M16 10a4 4 0 0 1-8 0" />
-                  </svg>
-                  Cart
-                  {totalQuantity > 0 && (
-                    <span className="cart-badge">{totalQuantity}</span>
-                  )}
-                </Link>
+                <NavLink to="/cart" className={({ isActive }) => `cart-badge-container${isActive ? " active" : ""}`} aria-label={`Cart, ${totalQuantity} items`}>
+                  <ShoppingBag aria-hidden="true" />
+                  <span>Cart</span>
+                  {totalQuantity > 0 && <span className="cart-badge">{totalQuantity}</span>}
+                </NavLink>
               </li>
             </>
           )}
 
-          {isAuthenticated ? (
-            <li style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span className="nav-user-greeting">
-                Hi, {user?.fullName?.split(" ")[0] || user?.name || "User"}
-              </span>
-              <button onClick={handleLogout} className="nav-btn-logout">
+          <li>
+            {isAuthenticated ? (
+              <button onClick={handleLogout} className="nav-btn-logout" type="button">
                 Logout
               </button>
-            </li>
-          ) : (
-            <li>
-              <Link to="/login" className="nav-btn-login">
-                Login
-              </Link>
-            </li>
-          )}
+            ) : (
+              <Link to="/login" className="nav-btn-login">Login</Link>
+            )}
+          </li>
         </ul>
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 };
 

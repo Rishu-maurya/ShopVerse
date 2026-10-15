@@ -1,45 +1,65 @@
-/* ===== ORDERS - Amazon/Flipkart Style ===== */
+/* ═══════════════════════════════════════════════════════
+   ORDERS — Premium Consistent Design
+   ═══════════════════════════════════════════════════════ */
 
 .orders-container {
   max-width: 1100px;
   margin: 16px auto 40px;
   padding: 0 16px;
+  animation: fadeInUp 400ms var(--ease-out) both;
 }
 
 .orders-title {
   font-size: 22px;
   font-weight: 700;
   color: var(--text-primary);
+  font-family: Manrope, "DM Sans", sans-serif;
+  letter-spacing: -0.03em;
   margin-bottom: 16px;
   background: #fff;
-  padding: 16px 20px;
+  padding: 18px 22px;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  border-left: 4px solid #2874F0;
+  border-left: 4px solid var(--accent);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Order Card */
+.orders-title::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--accent-light), var(--accent-dark));
+  border-radius: 2px;
+}
+
+/* ── Order Card ── */
 .order-card {
   background: #FFFFFF;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
   margin-bottom: 12px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-xs);
   overflow: hidden;
-  transition: box-shadow 0.2s;
+  transition: all var(--duration-normal) var(--ease-smooth);
 }
 
 .order-card:hover {
   box-shadow: var(--shadow-md);
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
 }
 
-/* Order Header */
+/* ── Order Header ── */
 .order-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #F7F7F7;
-  padding: 12px 20px;
+  background: linear-gradient(135deg, #f9faf9, #f3f6f4);
+  padding: 14px 22px;
   border-bottom: 1px solid var(--border);
   gap: 12px;
   flex-wrap: wrap;
@@ -60,41 +80,47 @@
   font-weight: 700;
   color: var(--text-primary);
   word-break: break-all;
+  font-family: "DM Sans", monospace;
 }
 
-/* Status Badge */
+/* ── Status Badge ── */
 .status-badge {
   padding: 5px 14px;
-  border-radius: 3px;
+  border-radius: var(--radius-pill);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.3px;
   text-transform: capitalize;
   flex-shrink: 0;
+  transition: transform var(--duration-normal) var(--ease-spring);
+}
+
+.order-card:hover .status-badge {
+  transform: scale(1.04);
 }
 
 .status-badge.processing,
 .status-badge {
-  background: rgba(40,116,240,0.1);
-  color: #2874F0;
+  background: var(--accent-subtle);
+  color: var(--accent);
 }
 
 .status-badge.delivered {
-  background: rgba(56,142,60,0.1);
-  color: #388E3C;
+  background: rgba(47, 107, 84, 0.1);
+  color: #2a7a56;
 }
 
 .status-badge.cancelled {
-  background: rgba(229,57,53,0.1);
+  background: rgba(199, 58, 58, 0.08);
   color: var(--danger);
 }
 
-/* Order Body */
+/* ── Order Body ── */
 .order-body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 18px 22px;
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -115,13 +141,15 @@
   color: var(--text-primary);
 }
 
-/* Empty Orders */
+/* ── Empty Orders ── */
 .empty-orders {
   background: #fff;
   border-radius: var(--radius-md);
   text-align: center;
   padding: 80px 20px;
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  animation: fadeInUp 400ms var(--ease-out) both;
 }
 
 .empty-orders h3 {
@@ -129,6 +157,7 @@
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 8px;
+  font-family: Manrope, "DM Sans", sans-serif;
 }
 
 .empty-orders p {
