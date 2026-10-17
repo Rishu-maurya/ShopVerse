@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setCart, clearCartState } from "../redux/slices/cartSlice";
 import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
 import { getCart, removeFromCart } from "../services/cartService";
 import { createOrder } from "../services/orderService";
 import "../styles/cart.css";
@@ -12,6 +11,7 @@ const Cart = () => {
   const { items = [], totalAmount = 0 } = useSelector((state) => state.cart);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [feedback, setFeedback] = useState(null);
   const [shippingAddress, setShippingAddress] = useState({
     address: "",
     city: "",
@@ -25,7 +25,10 @@ const Cart = () => {
       const data = await getCart();
       dispatch(setCart(data.cart || data));
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Failed to load your cart");
+      setFeedback({
+        type: "error",
+        message: err.response?.data?.message || err.message || "Failed to load your cart",
+      });
     } finally {
       setLoading(false);
     }
@@ -39,9 +42,12 @@ const Cart = () => {
     try {
       const data = await removeFromCart(productId);
       dispatch(setCart(data.cart));
-      toast.info("Item removed from cart");
+      setFeedback({ type: "success", message: "Item removed from cart" });
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Failed to remove item");
+      setFeedback({
+        type: "error",
+        message: err.response?.data?.message || err.message || "Failed to remove item",
+      });
     }
   };
 
@@ -50,10 +56,13 @@ const Cart = () => {
     setCheckoutLoading(true);
     try {
       await createOrder(shippingAddress);
-      toast.success("Order placed successfully! 🎉");
+      setFeedback({ type: "success", message: "Order placed successfully! 🎉" });
       dispatch(clearCartState());
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Checkout failed!");
+      setFeedback({
+        type: "error",
+        message: err.response?.data?.message || err.message || "Checkout failed!",
+      });
     } finally {
       setCheckoutLoading(false);
     }
@@ -75,6 +84,11 @@ const Cart = () => {
 
   return (
     <div className="cart-container">
+      {feedback && (
+        <p className={`page-feedback page-feedback-${feedback.type}`} role="status">
+          {feedback.message}
+        </p>
+      )}
       <div className="cart-header-bar">
         My Cart {items.length > 0 && <span style={{ fontSize: "14px", color: "#878787", fontWeight: "400" }}>({totalItems} {totalItems === 1 ? "item" : "items"})</span>}
       </div>

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 import { getMyProducts, deleteProduct } from "../services/productService";
+import "../styles/management.css";
 
 function MyProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
     fetchMyProducts();
@@ -15,11 +17,10 @@ function MyProducts() {
       const data = await getMyProducts();
       setProducts(data.products || data || []);
     } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          err.message ||
-          " Failed to load your products",
-      );
+      setFeedback({
+        type: "error",
+        message: err.response?.data?.message || err.message || "Failed to load your products",
+      });
     } finally {
       setLoading(false);
     }
@@ -33,40 +34,43 @@ function MyProducts() {
     try {
       await deleteProduct(id);
       setProducts(products.filter((p) => p._id !== id));
-      toast.success("Product deleted successfully");
+      setFeedback({ type: "success", message: "Product deleted successfully" });
     } catch (err) {
-      toast.error(
-        err.response?.data?.message ||
-          err.message ||
-          "Failed to delete product",
-      );
+      setFeedback({
+        type: "error",
+        message: err.response?.data?.message || err.message || "Failed to delete product",
+      });
     }
   };
 
   return (
-  <>
-  <div>
-    <h2>My Product</h2>
+  <main className="management-page">
+    <h2>My Products</h2>
+    {feedback && (
+      <p className={`page-feedback page-feedback-${feedback.type}`} role="status">
+        {feedback.message}
+      </p>
+    )}
 
     {loading ? (
-      <p>Loading your products...</p>
+      <p className="management-empty">Loading your products...</p>
     ) : products.length === 0 ? (
-      <p>You haven't added any productyet.</p>
+      <p className="management-empty">You haven't added any product yet.</p>
     ) : (
-      <div>
+      <div className="management-product-grid">
         {products.map((item) => (
-          <div key = { item._id } >
+          <article key={item._id} className="management-product-card">
             <h3>{item.name}</h3>
-            <p>₹{item.price}</p>
-            <p>Stock: {item.stock}</p>
+            <p className="management-product-price">₹{item.price}</p>
+            <p className="management-product-stock">Stock: {item.stock}</p>
             <button onClick={() => handleDelete(item._id)}>Delete</button>
-          </div>
+            <Link to={`/edit-product/${item._id}`}>Edit</Link>
+          </article>
         ))}
       </div>
     )
     }
-  </div>
-  </>
+  </main>
 )
 }
 

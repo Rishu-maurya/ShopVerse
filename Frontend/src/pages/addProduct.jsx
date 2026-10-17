@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { toast } from "react-toastify";
 import { createProduct} from "../services/productService"
+import "../styles/management.css";
 
 const AddProduct = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +13,7 @@ const AddProduct = () => {
   });
 
   const [loading, setLoading] = useState(false)
+  const [feedback, setFeedback] = useState(null);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,6 +22,7 @@ const AddProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setFeedback(null);
 
     const imagesArray = formData.images
       .split(",")
@@ -31,19 +33,27 @@ const AddProduct = () => {
         ...formData,
         images: imagesArray,
       });
-
-      toast.success(data.message || "Product added successfully");
+      setFeedback({
+        type: "success",
+        message: data.message || "Product added successfully",
+      });
     } catch (err) {
-      toast.error(
-        err.response?.data?.message || err.message || "Faild to add product",
-      );
+      setFeedback({
+        type: "error",
+        message: err.response?.data?.message || err.message || "Faild to add product",
+      });
     } finally {
       setLoading(false)
     }
   };
 
   return (
-    <>
+    <main className="add-product-page">
+      {feedback && (
+        <p className={`page-feedback page-feedback-${feedback.type}`} role="status">
+          {feedback.message}
+        </p>
+      )}
       <form className="authform" onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Product Name</label>
@@ -102,7 +112,7 @@ const AddProduct = () => {
           <button type="submit">Add Product</button>
         </div>
       </form>
-    </>
+    </main>
   );
 };
 

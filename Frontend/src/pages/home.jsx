@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { ArrowDownRight, ArrowUpRight, Package, Sparkles } from "lucide-react";
-import { toast } from "react-toastify";
 import ProductCard from "../components/productCard";
 import { setCart } from "../redux/slices/cartSlice";
 import { addToCart } from "../services/cartService";
@@ -14,6 +13,7 @@ const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [heroImageFailed, setHeroImageFailed] = useState(false);
+  const [feedback, setFeedback] = useState(null);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -22,7 +22,10 @@ const Home = () => {
         const data = await getAllProducts();
         setProducts(data.products || data || []);
       } catch (error) {
-        toast.error(error.response?.data?.message || error.message || "Failed to load products");
+        setFeedback({
+          type: "error",
+          message: error.response?.data?.message || error.message || "Failed to load products",
+        });
       } finally {
         setLoading(false);
       }
@@ -35,9 +38,12 @@ const Home = () => {
     try {
       const data = await addToCart(productId);
       dispatch(setCart(data.cart));
-      toast.success("Added to cart");
+      setFeedback({ type: "success", message: "Added to cart" });
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message || "Please login to add items");
+      setFeedback({
+        type: "error",
+        message: error.response?.data?.message || error.message || "Please login to add items",
+      });
     }
   };
 
@@ -52,6 +58,11 @@ const Home = () => {
 
   return (
     <main className="products-wrapper home-page">
+      {feedback && (
+        <p className={`page-feedback page-feedback-${feedback.type}`} role="status">
+          {feedback.message}
+        </p>
+      )}
       <section className="home-hero">
         <div className="home-hero-content">
           <span className="home-eyebrow"><Sparkles aria-hidden="true" /> The everyday edit</span>

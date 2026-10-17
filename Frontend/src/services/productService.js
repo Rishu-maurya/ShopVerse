@@ -15,6 +15,11 @@ export const createProduct = async ( productData) => {
   return data;
 };
 
+export const getProductById = async (id) => {
+  const { data } = await axiosInstance.get(`/product/${id}`);
+  return data;
+};
+
 export const updateProduct = async (id, updatedProductData) => {
   const { data } = await axiosInstance.put(`/product/update/${id}`, updatedProductData);
   return data;

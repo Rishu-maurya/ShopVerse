@@ -136,7 +136,8 @@
 }
 
 .input-group input,
-.form-group input {
+.form-group input,
+.auth-form > select {
   width: 100%;
   padding: 12px 14px;
   background: #f7f9f7;
@@ -148,11 +149,27 @@
   transition: all var(--duration-normal) var(--ease-smooth);
 }
 
+.input-group input::placeholder,
+.form-group input::placeholder {
+  color: #97a29b;
+}
+
 .input-group input:focus,
-.form-group input:focus {
+.form-group input:focus,
+.auth-form > select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 4px var(--accent-subtle);
   background: #fff;
+}
+
+.auth-form > select {
+  min-height: 46px;
+  cursor: pointer;
+}
+
+.auth-form > select option {
+  color: var(--text-primary);
+  background: var(--surface);
 }
 
 /* ── Submit Button ── */
@@ -202,6 +219,11 @@
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+}
+
+.auth-btn:focus-visible {
+  outline: 3px solid var(--accent-light);
+  outline-offset: 3px;
 }
 
 /* ── Error ── */

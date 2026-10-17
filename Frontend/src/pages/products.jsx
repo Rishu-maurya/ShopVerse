@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSearchParams } from "react-router-dom";
-import { toast } from "react-toastify";
 import ProductCard from "../components/productCard";
 import { setCart } from "../redux/slices/cartSlice";
 import { addToCart } from "../services/cartService";
@@ -14,6 +13,7 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("search") || "");
+  const [feedback, setFeedback] = useState(null);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -22,7 +22,10 @@ const Products = () => {
         const data = await getAllProducts();
         setProducts(data.products || data || []);
       } catch (error) {
-        toast.error(error.response?.data?.message || error.message || "Failed to load products");
+        setFeedback({
+          type: "error",
+          message: error.response?.data?.message || error.message || "Failed to load products",
+        });
       } finally {
         setLoading(false);
       }
@@ -65,9 +68,12 @@ const Products = () => {
     try {
       const data = await addToCart(productId);
       dispatch(setCart(data.cart));
-      toast.success("Added to cart");
+      setFeedback({ type: "success", message: "Added to cart" });
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message || "Please login to add items");
+      setFeedback({
+        type: "error",
+        message: error.response?.data?.message || error.message || "Please login to add items",
+      });
     }
   };
 
@@ -82,6 +88,11 @@ const Products = () => {
 
   return (
     <main className="products-wrapper">
+      {feedback && (
+        <p className={`page-feedback page-feedback-${feedback.type}`} role="status">
+          {feedback.message}
+        </p>
+      )}
       <div className="section-heading products-page-heading">
         <div>
           <span className="section-eyebrow">The ShopVerse collection</span>

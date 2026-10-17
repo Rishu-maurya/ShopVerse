@@ -1,7 +1,6 @@
 // src/pages/Register.jsx
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { toast } from "react-toastify";
 import { registerUser } from "../services/authService";
 import "../styles/auth.css";
 
@@ -15,6 +14,7 @@ const Register = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -24,13 +24,13 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     try {
-      const data = await registerUser(formData);
-      toast.success(data.message || "Registration Successful! Please Login 🎉");
+      await registerUser(formData);
       navigate("/login");
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Registration failed!");
+      setError(err.response?.data?.message || err.message || "Registration failed!");
     } finally {
       setLoading(false);
     }
@@ -50,6 +50,8 @@ const Register = () => {
           <h2>Create Account ✨</h2>
           <p>Join us and start shopping today</p>
         </div>
+
+        {error && <div className="auth-error" role="alert">{error}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
