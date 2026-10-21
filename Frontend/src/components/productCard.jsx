@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Package } from "lucide-react";
+import { Link } from "react-router-dom";
 import "../styles/products.css";
 
 const currencyFormatter = new Intl.NumberFormat("en-IN", {
@@ -9,7 +10,9 @@ const currencyFormatter = new Intl.NumberFormat("en-IN", {
 });
 
 const ProductCard = ({ product, onAddToCart }) => {
-  const image = product.images?.find((url) => typeof url === "string" && url.trim());
+  const image = product.images?.find(
+    (url) => typeof url === "string" && url.trim(),
+  );
   const [imageUnavailable, setImageUnavailable] = useState(!image);
 
   useEffect(() => {
@@ -19,23 +22,39 @@ const ProductCard = ({ product, onAddToCart }) => {
   return (
     <article className="product-card">
       <div className="card-image-box">
-        {image && !imageUnavailable ? (
-          <img
-            src={image}
-            alt={product.name}
-            loading="lazy"
-            onError={() => setImageUnavailable(true)}
-          />
-        ) : (
-          <Package className="product-image-placeholder" aria-hidden="true" />
-        )}
+        <Link
+          to={`/products/${product._id}`}
+          style={{ display: "block", width: "100%", height: "100%" }}
+        >
+          {image && !imageUnavailable ? (
+            <img
+              src={image}
+              alt={product.name}
+              loading="lazy"
+              onError={() => setImageUnavailable(true)}
+            />
+          ) : (
+            <Package className="product-image-placeholder" aria-hidden="true" />
+          )}
+        </Link>
       </div>
 
       <div className="card-content">
-        {product.category && <span className="card-category">{product.category}</span>}
-        <h3 className="card-title">{product.name}</h3>
+        {product.category && (
+          <span className="card-category">{product.category}</span>
+        )}
+        <h3 className="card-title">
+          <Link
+            to={`/products/${product._id}`}
+            style={{ color: "inherit", textDecoration: "none" }}
+          >
+            {product.name}
+          </Link>
+        </h3>
         <div className="card-bottom">
-          <span className="card-price">{currencyFormatter.format(Number(product.price) || 0)}</span>
+          <span className="card-price">
+            {currencyFormatter.format(Number(product.price) || 0)}
+          </span>
           <button
             className="btn-add-cart"
             type="button"

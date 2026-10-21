@@ -114,6 +114,7 @@ const updateQuantity = async (req, res) => {
         }
 
         await cart.save()
+        await cart.populate("items.product")
 
         return res.status(200).json({
             success: true,
@@ -126,18 +127,19 @@ const updateQuantity = async (req, res) => {
     }
 }
 
-const clearCart = async (req,res) => {
-    try{
+const clearCart = async (req, res) => {
+    try {
         const userId = req.userId
-        
-        const cart = await Cart.findOne({user: userId})
+
+        const cart = await Cart.findOne({ user: userId })
 
         if (!cart) {
             return res.status(404).json({
-                success : false,
-                message: "Cart not Found"})
+                success: false,
+                message: "Cart not Found"
+            })
         }
-        cart.items =[]
+        cart.items = []
         await cart.save()
 
         return res.status(200).json({
@@ -145,7 +147,7 @@ const clearCart = async (req,res) => {
             message: "Cart clear Successfully"
         })
 
-    }catch (error) {
+    } catch (error) {
         res.status(500).json({
             success: false,
             message: error.message
