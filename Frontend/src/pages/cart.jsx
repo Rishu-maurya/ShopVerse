@@ -3,7 +3,11 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setCart, clearCartState } from "../redux/slices/cartSlice";
 import { Link } from "react-router-dom";
-import { getCart, removeFromCart } from "../services/cartService";
+import {
+  getCart,
+  removeFromCart,
+  updateQuantity,
+} from "../services/cartService";
 import { createOrder } from "../services/orderService";
 import "../styles/cart.css";
 
@@ -27,7 +31,10 @@ const Cart = () => {
     } catch (err) {
       setFeedback({
         type: "error",
-        message: err.response?.data?.message || err.message || "Failed to load your cart",
+        message:
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to load your cart",
       });
     } finally {
       setLoading(false);
@@ -46,7 +53,25 @@ const Cart = () => {
     } catch (err) {
       setFeedback({
         type: "error",
-        message: err.response?.data?.message || err.message || "Failed to remove item",
+        message:
+          err.response?.data?.message || err.message || "Failed to remove item",
+      });
+    }
+  };
+
+  const handleQuantityChange = async (productId, newQuatity) => {
+    if (newQuantity < 1) return;
+
+    try {
+      const data = await updateQuantity(productId, newQuantity);
+      dispatch(setCart(data.cart));
+    } catch (err) {
+      setFeedback({
+        type: "error",
+        message:
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to update quantity",
       });
     }
   };
@@ -56,12 +81,16 @@ const Cart = () => {
     setCheckoutLoading(true);
     try {
       await createOrder(shippingAddress);
-      setFeedback({ type: "success", message: "Order placed successfully! 🎉" });
+      setFeedback({
+        type: "success",
+        message: "Order placed successfully! 🎉",
+      });
       dispatch(clearCartState());
     } catch (err) {
       setFeedback({
         type: "error",
-        message: err.response?.data?.message || err.message || "Checkout failed!",
+        message:
+          err.response?.data?.message || err.message || "Checkout failed!",
       });
     } finally {
       setCheckoutLoading(false);
@@ -75,8 +104,26 @@ const Cart = () => {
   if (loading)
     return (
       <div className="cart-container">
-        <div style={{ textAlign: "center", padding: "80px 20px", background: "#fff", borderRadius: "8px", boxShadow: "var(--shadow-sm)" }}>
-          <div style={{ width: "40px", height: "40px", border: "3px solid #e0e0e0", borderTopColor: "#2874F0", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }}></div>
+        <div
+          style={{
+            textAlign: "center",
+            padding: "80px 20px",
+            background: "#fff",
+            borderRadius: "8px",
+            boxShadow: "var(--shadow-sm)",
+          }}
+        >
+          <div
+            style={{
+              width: "40px",
+              height: "40px",
+              border: "3px solid #e0e0e0",
+              borderTopColor: "#2874F0",
+              borderRadius: "50%",
+              animation: "spin 0.8s linear infinite",
+              margin: "0 auto 16px",
+            }}
+          ></div>
           <p style={{ color: "#878787" }}>Loading your cart...</p>
         </div>
       </div>
@@ -85,22 +132,53 @@ const Cart = () => {
   return (
     <div className="cart-container">
       {feedback && (
-        <p className={`page-feedback page-feedback-${feedback.type}`} role="status">
+        <p
+          className={`page-feedback page-feedback-${feedback.type}`}
+          role="status"
+        >
           {feedback.message}
         </p>
       )}
       <div className="cart-header-bar">
-        My Cart {items.length > 0 && <span style={{ fontSize: "14px", color: "#878787", fontWeight: "400" }}>({totalItems} {totalItems === 1 ? "item" : "items"})</span>}
+        My Cart{" "}
+        {items.length > 0 && (
+          <span
+            style={{ fontSize: "14px", color: "#878787", fontWeight: "400" }}
+          >
+            ({totalItems} {totalItems === 1 ? "item" : "items"})
+          </span>
+        )}
       </div>
 
       {items.length === 0 ? (
         <div className="empty-cart">
-          <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#e0e0e0" strokeWidth="1.5" style={{ margin: "0 auto 20px", display: "block" }}>
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+          <svg
+            width="100"
+            height="100"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#e0e0e0"
+            strokeWidth="1.5"
+            style={{ margin: "0 auto 20px", display: "block" }}
+          >
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
           </svg>
           <h3>Your cart is empty!</h3>
           <p style={{ marginBottom: "20px" }}>Add items to it now.</p>
-          <Link to="/products" style={{ background: "#2874F0", color: "#fff", padding: "12px 32px", borderRadius: "4px", fontWeight: "700", textDecoration: "none", fontSize: "14px" }}>
+          <Link
+            to="/products"
+            style={{
+              background: "#2874F0",
+              color: "#fff",
+              padding: "12px 32px",
+              borderRadius: "4px",
+              fontWeight: "700",
+              textDecoration: "none",
+              fontSize: "14px",
+            }}
+          >
             Shop Now
           </Link>
         </div>
@@ -109,23 +187,60 @@ const Cart = () => {
           {/* Items */}
           <div className="cart-items-list">
             {items.map((item) => (
-              <div key={item.product?._id || item._id} className="cart-item-card">
+              <div
+                key={item.product?._id || item._id}
+                className="cart-item-card"
+              >
                 <img
-                  src={item.product?.images?.[0] || "https://via.placeholder.com/100"}
+                  src={
+                    item.product?.images?.[0] ||
+                    "https://via.placeholder.com/100"
+                  }
                   alt={item.product?.name}
                   className="cart-item-img"
                 />
                 <div className="cart-item-details">
-                  <h4 className="cart-item-title">{item.product?.name || "Product Item"}</h4>
-                  <span className="cart-item-price">₹{item.product?.price}</span>
+                  <h4 className="cart-item-title">
+                    {item.product?.name || "Product Item"}
+                  </h4>
+                  <span className="cart-item-price">
+                    ₹{item.product?.price}
+                  </span>
                   <div className="cart-item-free-delivery">✓ Free Delivery</div>
                 </div>
 
-                <div className="cart-qty-badge">Qty: {item.quantity}</div>
+                <div className="cart-qty-badge">
+                  <button
+                    type="button"
+                    disabled={item.quantity <= 1}
+                    onClick={() =>
+                      handleQuantityChange(
+                        item.product?._id || item._id,
+                        item.quantity - 1,
+                      )
+                    }
+                  >
+                    −
+                  </button>
+                  <span>{item.quantity}</span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleQuantityChange(
+                        item.product?._id || item._id,
+                        item.quantity + 1,
+                      )
+                    }
+                  >
+                    +
+                  </button>
+                </div>
 
                 <button
                   className="remove-btn"
-                  onClick={() => handleRemoveItem(item.product?._id || item._id)}
+                  onClick={() =>
+                    handleRemoveItem(item.product?._id || item._id)
+                  }
                 >
                   Remove
                 </button>
@@ -146,7 +261,9 @@ const Cart = () => {
               </div>
               <div className="summary-row">
                 <span>Discount</span>
-                <span style={{ color: "#388E3C", fontWeight: "700" }}>− ₹{discount}</span>
+                <span style={{ color: "#388E3C", fontWeight: "700" }}>
+                  − ₹{discount}
+                </span>
               </div>
               <div className="summary-row">
                 <span>Delivery Charges</span>
@@ -171,7 +288,12 @@ const Cart = () => {
                     name="address"
                     placeholder="House No., Street, Area"
                     value={shippingAddress.address}
-                    onChange={(e) => setShippingAddress({ ...shippingAddress, address: e.target.value })}
+                    onChange={(e) =>
+                      setShippingAddress({
+                        ...shippingAddress,
+                        address: e.target.value,
+                      })
+                    }
                     required
                   />
                 </label>
@@ -181,7 +303,12 @@ const Cart = () => {
                     name="city"
                     placeholder="City"
                     value={shippingAddress.city}
-                    onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
+                    onChange={(e) =>
+                      setShippingAddress({
+                        ...shippingAddress,
+                        city: e.target.value,
+                      })
+                    }
                     required
                   />
                 </label>
@@ -191,7 +318,12 @@ const Cart = () => {
                     name="postalCode"
                     placeholder="PIN Code"
                     value={shippingAddress.postalCode}
-                    onChange={(e) => setShippingAddress({ ...shippingAddress, postalCode: e.target.value })}
+                    onChange={(e) =>
+                      setShippingAddress({
+                        ...shippingAddress,
+                        postalCode: e.target.value,
+                      })
+                    }
                     required
                   />
                 </label>
@@ -201,7 +333,12 @@ const Cart = () => {
                     name="country"
                     placeholder="Country"
                     value={shippingAddress.country}
-                    onChange={(e) => setShippingAddress({ ...shippingAddress, country: e.target.value })}
+                    onChange={(e) =>
+                      setShippingAddress({
+                        ...shippingAddress,
+                        country: e.target.value,
+                      })
+                    }
                     required
                   />
                 </label>

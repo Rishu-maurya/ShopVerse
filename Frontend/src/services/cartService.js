@@ -16,3 +16,11 @@ export const removeFromCart = async (productId) => {
   });
   return data;
 };
+
+export const updateQuantity = async (productId, quantity) => {
+  const { data } = await axiosInstance.put("/addCart/updateQuantity", {
+    productId, 
+    quantity
+  });
+  return data;
+}
